@@ -13,7 +13,10 @@ class Customer(Base):
 class Rental(Base):
     __tablename__ = "rental"
     rental_id = Column(Integer, primary_key=True)
+    rental_date = Column(String)
+    inventory_id = Column(Integer, ForeignKey('inventory.inventory_id'))
     customer_id = Column(Integer, ForeignKey('customer.customer_id'))
+    return_date = Column(String)
     customer = relationship("Customer", back_populates="rentals")
 
 
@@ -25,7 +28,7 @@ class Film(Base):
 class FilmActor(Base):
     __tablename__ = "film_actor"
     actor_id = Column(Integer, primary_key=True)
-    film_id = Column(Integer, ForeignKey('film.film_id'), priumary_key=True)
+    film_id = Column(Integer, ForeignKey('film.film_id'), primary_key=True)
 
 
 class Inventory(Base):
