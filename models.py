@@ -20,6 +20,7 @@ class Film(Base):
     film_id = Column(Integer, primary_key=True)
     title = Column(String)
     rental_rate = Column(Numeric(4,2))
+    length = Column(Integer)
 
 class FilmActor(Base):
     __tablename__ = "film_actor"

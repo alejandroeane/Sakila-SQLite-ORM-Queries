@@ -2,6 +2,7 @@ from sqlalchemy import create_engine, func, desc
 from sqlalchemy.orm import declarative_base, sessionmaker
 from datetime import datetime, timedelta
 from models import *
+from decimal import Decimal
 
 engine = create_engine('sqlite:///sakila.db', echo=False) 
 
@@ -131,11 +132,50 @@ def ejercicio_6():
 
 
 def ejercicio_7():
-    pass
-
-
+    avg_length = session.query(func.avg(Film.length)).scalar() or 0
+    res = session.query(
+        Film.film_id,
+        Film.title,
+        Film.rental_rate
+    ).filter(Film.length > avg_length).all()
+    
+    print(f"{'TÍTULO':<30} | {'PRECIO ANT.':<10} | {'PRECIO NUEVO'}")
+    print("-" * 60)
+    
+    for f_id, title, price in res:
+        precio_anterior = price
+        nuevo_precio = (price * Decimal('1.10')).quantize(Decimal('0.00'))
+        session.query(Film).filter(Film.film_id == f_id).update({"rental_rate": nuevo_precio})
+        print(f"{title[:30]:<30} | {precio_anterior:<12} | {nuevo_precio}")
+    
+    session.commit()
+    
 def ejercicio_8():
-    pass
+    nueva_categoria = session.query(Category).filter_by(name="Premium").first()
+    if not nueva_categoria:
+        nueva_categoria = Category(name="Premium")
+        session.add(nueva_categoria)
+        session.flush()
+    
+    avg_rate = session.query(func.avg(Film.rental_rate)).scalar() or 0
+    res = session.query(Film.film_id).filter(Film.rental_rate > avg_rate).all()
+    
+    for (f_id,) in res:
+        exists = session.query(FilmCategory.film_id).filter_by(
+            film_id=f_id, 
+            category_id=nueva_categoria.category_id
+        ).first()
+        
+        if not exists:
+            nueva_relacion = FilmCategory(
+                film_id=f_id, 
+                category_id=nueva_categoria.category_id
+            )
+            session.add(nueva_relacion)
+            
+    session.commit()
+    
+    print(f"Se han asignado {len(res)} películas con precio mayor a ${avg_rate:.2f}")
 
 
 if __name__ == '__main__':
@@ -149,8 +189,8 @@ if __name__ == '__main__':
         print("4. Mostrar clientes sin alquiler desde hace X días")
         print("5. Mostrar películas nunca alquiadas")
         print("6. Mostrar precio medio por categoría de película")
-        print("7. ")
-        print("8. ")
+        print("7. Subir un 10% el precio a películas largas")
+        print("8. Crear categoría Premium para películas caras")
         print("0. Salir")
         print("="*40)
         
@@ -176,6 +216,10 @@ if __name__ == '__main__':
             ejercicio_5()
         elif option == '6':
             ejercicio_6()
+        elif option == '7':
+            ejercicio_7()
+        elif option == '8':
+            ejercicio_8()
         elif option == '0':
             print("Cerrando sesión...")
             break
