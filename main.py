@@ -1,5 +1,5 @@
 from sqlalchemy import create_engine, func, desc
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import sessionmaker
 from datetime import datetime, timedelta
 from models import *
 from decimal import Decimal
@@ -90,7 +90,7 @@ def ejercicio_4(dias: int):
         .order_by(desc(func.max(Rental.rental_date))).all()
     
     print(f"\n{'CLIENTE':<30} | {'ÚLTIMO ALQUILER'}")
-    print("-" * 50)
+    print("-" * 55)
     
     for name, surname, last_date in res:
         nombre_completo = f"{name} {surname}"
@@ -106,7 +106,7 @@ def ejercicio_5():
         .having(func.count(Rental.rental_id) == 0).all()
     
     print(f"\n{'PELÍCULAS NUNCA ALQUILADAS'}")
-    print("-" * 30)
+    print("-" * 28)
     if not res:
         print("Todas las películas han sido alquiladas alguna vez.")
         return
@@ -124,11 +124,11 @@ def ejercicio_6():
         .group_by(Category.category_id, Category.name) \
         .order_by(func.avg(Film.rental_rate).desc()).all()
 
-    print(f"\n{'CATEGORÍA':<30} | {'PRECIO MEDIO'}")
-    print("-" * 50)
+    print(f"\n{'CATEGORÍA':<15} | {'PRECIO MEDIO'}")
+    print("-" * 30)
 
     for cat, precio in res:
-        print(f"{cat:<30} | ${float(precio):.2f}")
+        print(f"{cat:<15} | ${float(precio):.2f}")
 
 
 def ejercicio_7():
@@ -139,11 +139,11 @@ def ejercicio_7():
         Film.rental_rate
     ).filter(Film.length > avg_length).all()
     
-    print(f"{'TÍTULO':<30} | {'PRECIO ANT.':<10} | {'PRECIO NUEVO'}")
+    print(f"{'TÍTULO':<30} | {'PRECIO ANT.':<12} | {'PRECIO NUEVO'}")
     print("-" * 60)
     
     for f_id, title, price in res:
-        precio_anterior = price
+        precio_anterior = Decimal(str(price))
         nuevo_precio = (price * Decimal('1.10')).quantize(Decimal('0.00'))
         session.query(Film).filter(Film.film_id == f_id).update({"rental_rate": nuevo_precio})
         print(f"{title[:30]:<30} | {precio_anterior:<12} | {nuevo_precio}")
